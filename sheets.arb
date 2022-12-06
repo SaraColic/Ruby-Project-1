@@ -1,0 +1,75 @@
+require 'roo'
+require 'roo-xls'
+
+class Column 
+	attr_accessor :table, :name, :column
+
+    def initialize(table, name, column)
+        @table = table
+        @name = name
+        @column = column
+    end
+
+    def sum
+        column.inject(0){|sum,x| sum + x.to_i }
+    end
+
+	def avg 
+		sum.fdiv(column.size-1)
+    end
+
+    def method_missing(row_name, *args)
+        @column.each_with_index do |value, index|
+            return @table[index] if value == row_name.to_s
+        end
+        return nil
+    end
+end
+
+class Table 
+
+	attr_accessor :table, :col_table 
+    
+	include Enumerable 
+
+    def initialize file_name, sheet_num
+		@table = Array.new 
+		file = Roo::Spreadsheet.open(file_name, :expand_merged_ranges => true) 
+
+        (file.sheet(sheet_num).first_row..file.sheet(sheet_num).last_row).each do |x| 
+			if check file.sheet(sheet_num).row(x) then @table << file.sheet(sheet_num).row(x) 
+			end
+		end
+
+		@col_table = @table.transpose
+	end
+
+	def method_missing(column_name)
+        Column.new(@table, column_name.to_s, @col_table[@table[0].index(column_name.to_s)])
+    end
+
+	def [](column_name)
+        return @col_table[ @table[0].index(column_name) ] 
+    end
+
+    def check r
+		r.each do |item|
+			return false if item.to_s.downcase.include? "total" or item.to_s.downcase.include? "subtotal"
+		end
+		
+		return false if r.all? { |x| x.nil? }
+		
+		true
+	end
+
+	def each
+		@table.each do |row|
+			row.each do |item|
+				yield item
+			end
+		end
+	end
+
+	def row number_of_row; @table[number_of_row]
+	end	
+end

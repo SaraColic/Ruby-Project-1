@@ -1,0 +1,34 @@
+load './sheets.arb'
+
+tabela1 = './Tabela1.xlsx'
+tabela2 = './Tabela2.xlsx'
+
+t = Table.new tabela1, 1 
+t1 = Table.new tabela2, 1
+
+puts "1. Dvodimenzionalni niz sa vrijednostima tabele"
+p t.table 
+
+
+puts "2. Pristup redu preko metode row kao i njegovim elementima"
+p t.row(2)
+p t.row(3)[2]
+
+
+puts "3. Demonstracija enumerable modula"
+t.each {|item| p item } 
+
+
+puts "4. [] sintaksa"
+p t["Index"]
+p t["Bodovi"][2]
+t["Bodovi"][3]=1000
+p t["Bodovi"]
+
+
+puts "5. Pristup kolonama preko metaprogramiranja"
+p t.Ocjena.sum 
+p t.Ocjena.avg
+p t.Index.ri1520
+
+#p t1.table
